@@ -39,3 +39,8 @@ logging:
   level:
     root: INFO
     com.nevvesdev.guardianapi: DEBUG
+
+jwt:
+  secret: your-super-secret-key-that-is-at-least-32-characters-long-for-hs256-change-in-production
+  expiration: 86400000
+  refresh-expiration: 604800000
