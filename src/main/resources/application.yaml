@@ -30,10 +30,15 @@ spring:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
+    flyway:
+      enabled: true
+      locations: classpath:db/migration
+      baseline-on-migrate: true
+
 server:
-  servlet:
+ servlet:
     context-path: /api
-  port: 8080
+    port: 8080
 
 logging:
   level:
