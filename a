@@ -1,0 +1,6 @@
+[33m73d022a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/oauth2[m[33m, [m[1;31morigin/develop[m[33m, [m[1;32mdevelop[m[33m)[m feat: endpoints de login e registro com DTOs, AuthService e migrations Flyway
+[33ma030cca[m feat: implementar JWT Token Provider com geração, validação e refresh de tokens
+[33m4277719[m feat: implementar Spring Security com auth JWT e filtros de segurança
+[33mfc350a1[m feat: criar entidades com repositories
+[33m17ed02d[m chore: atualizar scaffold
+[33m08b37e0[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m chore: scaffold do projeto

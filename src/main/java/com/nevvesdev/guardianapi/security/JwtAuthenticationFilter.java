@@ -1,5 +1,6 @@
 package com.nevvesdev.guardianapi.security;
 
+import com.nevvesdev.guardianapi.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,16 +23,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
+            if (jwt != null && jwtTokenProvider.validateToken(jwt) && !tokenService.isTokenBlacklisted(jwt)) {
                 String userEmail = jwtTokenProvider.getUserEmailFromToken(jwt);
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
 
