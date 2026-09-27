@@ -5,6 +5,7 @@ import com.nevvesdev.guardianapi.dto.request.RegisterRequest;
 import com.nevvesdev.guardianapi.dto.response.AuthResponse;
 import com.nevvesdev.guardianapi.entity.Role;
 import com.nevvesdev.guardianapi.entity.User;
+import com.nevvesdev.guardianapi.exception.BusinessException;
 import com.nevvesdev.guardianapi.repository.RoleRepository;
 import com.nevvesdev.guardianapi.repository.UserRepository;
 import com.nevvesdev.guardianapi.security.JwtTokenProvider;
@@ -43,13 +44,13 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(request.getEmail());
 
-        log.info("Usuário autenticado: {}", request.getEmail());
+        log.info("Login realizado com sucesso para: {}", request.getEmail());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtTokenProvider.getExpirationTime(accessToken))
+                .expiresIn(86400000L)
                 .email(request.getEmail())
                 .build();
     }
@@ -57,7 +58,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email já cadastrado: " + request.getEmail());
+            throw new BusinessException("Email já cadastrado: " + request.getEmail());
         }
 
         Role userRole = roleRepository.findByName("USER")
@@ -76,21 +77,29 @@ public class AuthService {
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .isActive(true)
                 .roles(roles)
                 .build();
 
         userRepository.save(user);
 
-        log.info("Novo usuário registrado: {}", request.getEmail());
+        log.info("Usuário registrado com sucesso: {}", request.getEmail());
 
-        String accessToken = jwtTokenProvider.generateTokenFromEmail(request.getEmail());
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        String accessToken = jwtTokenProvider.generateToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(request.getEmail());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtTokenProvider.getExpirationTime(accessToken))
+                .expiresIn(86400000L)
                 .email(request.getEmail())
                 .build();
     }

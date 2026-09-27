@@ -2,6 +2,7 @@ package com.nevvesdev.guardianapi.service;
 
 import com.nevvesdev.guardianapi.dto.request.RefreshTokenRequest;
 import com.nevvesdev.guardianapi.dto.response.AuthResponse;
+import com.nevvesdev.guardianapi.exception.UnauthorizedException;
 import com.nevvesdev.guardianapi.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,11 @@ public class TokenService {
         String refreshToken = request.getRefreshToken();
 
         if (isTokenBlacklisted(refreshToken)) {
-            throw new RuntimeException("Refresh token inválido ou expirado");
+            throw new UnauthorizedException("Refresh token inválido ou expirado");
         }
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new RuntimeException("Refresh token inválido");
+            throw new UnauthorizedException("Refresh token inválido");
         }
 
         String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
