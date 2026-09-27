@@ -11,7 +11,8 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,6 +31,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String fullName;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
@@ -42,13 +44,14 @@ public class User implements UserDetails {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -74,19 +77,13 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
     public boolean isEnabled() {

@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "permissions")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -31,8 +32,9 @@ public class Permission {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "permissions")
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

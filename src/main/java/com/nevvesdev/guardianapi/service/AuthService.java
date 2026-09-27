@@ -18,8 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +70,7 @@ public class AuthService {
                     return roleRepository.save(newRole);
                 });
 
-        Set<Role> roles = new HashSet<>();
+        List<Role> roles = new ArrayList<>();
         roles.add(userRole);
 
         User user = User.builder()
