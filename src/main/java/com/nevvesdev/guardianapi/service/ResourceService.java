@@ -4,10 +4,10 @@ import com.nevvesdev.guardianapi.dto.request.ResourceRequest;
 import com.nevvesdev.guardianapi.dto.response.ResourceResponse;
 import com.nevvesdev.guardianapi.entity.Resource;
 import com.nevvesdev.guardianapi.entity.User;
-import com.nevvesdev.guardianapi.exception.BusinessException;
 import com.nevvesdev.guardianapi.exception.ResourceNotFoundException;
 import com.nevvesdev.guardianapi.repository.ResourceRepository;
 import com.nevvesdev.guardianapi.repository.UserRepository;
+import com.nevvesdev.guardianapi.security.AuditAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +29,7 @@ public class ResourceService {
 
     @Transactional
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @AuditAction(action = "CREATE_RESOURCE", entityType = "Resource")
     public ResourceResponse create(ResourceRequest request) {
         User currentUser = getCurrentUser();
 
@@ -48,6 +49,7 @@ public class ResourceService {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @AuditAction(action = "LIST_RESOURCES", entityType = "Resource")
     public List<ResourceResponse> findAll() {
         return resourceRepository.findAllActive()
                 .stream()
@@ -56,6 +58,7 @@ public class ResourceService {
     }
 
     @PreAuthorize("hasPermission(#id, 'Resource', 'READ')")
+    @AuditAction(action = "READ_RESOURCE", entityType = "Resource")
     public ResourceResponse findById(String id) {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
@@ -65,6 +68,7 @@ public class ResourceService {
 
     @Transactional
     @PreAuthorize("hasPermission(#id, 'Resource', 'WRITE')")
+    @AuditAction(action = "UPDATE_RESOURCE", entityType = "Resource")
     public ResourceResponse update(String id, ResourceRequest request) {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
@@ -83,6 +87,7 @@ public class ResourceService {
 
     @Transactional
     @PreAuthorize("hasPermission(#id, 'Resource', 'DELETE')")
+    @AuditAction(action = "DELETE_RESOURCE", entityType = "Resource")
     public void delete(String id) {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
@@ -96,6 +101,7 @@ public class ResourceService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @AuditAction(action = "LIST_RESOURCES_BY_OWNER", entityType = "Resource")
     public List<ResourceResponse> findByOwner(String ownerId) {
         return resourceRepository.findByOwnerIdAndDeletedAtIsNull(ownerId)
                 .stream()
