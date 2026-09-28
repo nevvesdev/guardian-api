@@ -4,6 +4,7 @@ import com.nevvesdev.guardianapi.dto.request.LoginRequest;
 import com.nevvesdev.guardianapi.dto.request.RefreshTokenRequest;
 import com.nevvesdev.guardianapi.dto.request.RegisterRequest;
 import com.nevvesdev.guardianapi.dto.response.AuthResponse;
+import com.nevvesdev.guardianapi.security.RateLimit;
 import com.nevvesdev.guardianapi.service.AuthService;
 import com.nevvesdev.guardianapi.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,18 +25,21 @@ public class AuthController {
     private final TokenService tokenService;
 
     @PostMapping("/login")
+    @RateLimit(maxRequests = 10, windowSeconds = 60, identifier = "ip")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
+    @RateLimit(maxRequests = 5, windowSeconds = 60, identifier = "ip")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/refresh")
+    @RateLimit(maxRequests = 20, windowSeconds = 60, identifier = "ip")
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = tokenService.refreshToken(request);
         return ResponseEntity.ok(response);
