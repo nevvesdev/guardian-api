@@ -55,7 +55,7 @@ public class ResourceService {
                 .toList();
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasPermission(#id, 'Resource', 'READ')")
     public ResourceResponse findById(String id) {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
@@ -64,18 +64,10 @@ public class ResourceService {
     }
 
     @Transactional
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasPermission(#id, 'Resource', 'WRITE')")
     public ResourceResponse update(String id, ResourceRequest request) {
-        User currentUser = getCurrentUser();
-
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
-
-        if (!resource.getOwnerId().equals(currentUser.getId())
-                && currentUser.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new BusinessException("Você não tem permissão para editar este recurso");
-        }
 
         resource.setName(request.getName());
         resource.setDescription(request.getDescription());
@@ -83,30 +75,24 @@ public class ResourceService {
 
         Resource updated = resourceRepository.save(resource);
 
-        log.info("Recurso atualizado: {} por usuário: {}", id, currentUser.getEmail());
+        log.info("Recurso atualizado: {} por usuário: {}",
+                id, SecurityContextHolder.getContext().getAuthentication().getName());
 
         return toResponse(updated);
     }
 
     @Transactional
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasPermission(#id, 'Resource', 'DELETE')")
     public void delete(String id) {
-        User currentUser = getCurrentUser();
-
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
-
-        if (!resource.getOwnerId().equals(currentUser.getId())
-                && currentUser.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new BusinessException("Você não tem permissão para deletar este recurso");
-        }
 
         resource.setDeletedAt(LocalDateTime.now());
         resource.setIsActive(false);
         resourceRepository.save(resource);
 
-        log.info("Recurso deletado (soft delete): {} por usuário: {}", id, currentUser.getEmail());
+        log.info("Recurso deletado (soft delete): {} por usuário: {}",
+                id, SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
