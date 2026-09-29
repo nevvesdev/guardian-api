@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,6 +25,7 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
+    private final ResourceHistoryService resourceHistoryService;
 
     @Transactional
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -42,6 +42,7 @@ public class ResourceService {
                 .build();
 
         Resource saved = resourceRepository.save(resource);
+        resourceHistoryService.saveHistory(null, saved, "CREATE");
 
         log.info("Recurso criado: {} por usuário: {}", saved.getId(), currentUser.getEmail());
 
@@ -73,11 +74,21 @@ public class ResourceService {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
 
+        Resource previous = Resource.builder()
+                .id(resource.getId())
+                .name(resource.getName())
+                .description(resource.getDescription())
+                .type(resource.getType())
+                .ownerId(resource.getOwnerId())
+                .isActive(resource.getIsActive())
+                .build();
+
         resource.setName(request.getName());
         resource.setDescription(request.getDescription());
         resource.setType(request.getType());
 
         Resource updated = resourceRepository.save(resource);
+        resourceHistoryService.saveHistory(previous, updated, "UPDATE");
 
         log.info("Recurso atualizado: {} por usuário: {}",
                 id, SecurityContextHolder.getContext().getAuthentication().getName());
@@ -92,9 +103,19 @@ public class ResourceService {
         Resource resource = resourceRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Recurso", id));
 
-        resource.setDeletedAt(LocalDateTime.now());
+        Resource previous = Resource.builder()
+                .id(resource.getId())
+                .name(resource.getName())
+                .description(resource.getDescription())
+                .type(resource.getType())
+                .ownerId(resource.getOwnerId())
+                .isActive(resource.getIsActive())
+                .build();
+
+        resource.softDelete();
         resource.setIsActive(false);
-        resourceRepository.save(resource);
+        Resource deleted = resourceRepository.save(resource);
+        resourceHistoryService.saveHistory(previous, deleted, "DELETE");
 
         log.info("Recurso deletado (soft delete): {} por usuário: {}",
                 id, SecurityContextHolder.getContext().getAuthentication().getName());
