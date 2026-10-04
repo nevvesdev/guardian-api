@@ -10,24 +10,37 @@ API de gestão de recursos com OAuth2, JWT, RBAC e auditoria. Construída com Ja
 
 ```mermaid
 graph TD
-    A[Cliente HTTP] -->|POST /auth/login| B[AuthController]
-    B -->|valida credenciais| C[UserRepository]
-    B -->|gera JWT| D[JwtTokenProvider]
-    D -->|sign HS512| E[SecretKey]
-    D -->|retorna access+refresh| A
+    A["👤 Cliente HTTP"]
+    B["🔐 AuthController"]
+    C["🗄️ UserRepository"]
+    D["🔑 JwtTokenProvider"]
+    E["🔒 HS512"]
+    F["🛡️ JwtAuthenticationFilter"]
+    G["🔓 SecurityContext"]
+    H["✅ MethodSecurityInterceptor"]
+    I["📋 PermissionRepository"]
+    J["📦 ResourceController"]
+    K["📝 AuditLogRepository"]
+    L["💾 PostgreSQL"]
+    M["⚡ Redis"]
     
-    A -->|GET /resources<br/>Bearer Token| F[JwtAuthenticationFilter]
+    A -->|POST /auth/login| B
+    B -->|valida credenciais| C
+    B -->|gera JWT| D
+    D -->|sign HS512| E
+    D -->|access+refresh| A
+    
+    A -->|GET /resources + Bearer Token| F
     F -->|valida assinatura| D
-    F -->|extrai email| G[SecurityContext]
-    G -->|check RBAC| H[MethodSecurityInterceptor]
-    H -->|@PreAuthorize| I[PermissionRepository]
-    I -->|busca role+permissão| J[ResourceController]
-    J -->|auditoria AOP| K[AuditLogRepository]
-    K -->|persiste| L[(PostgreSQL)]
-    J -->|cache/rate-limit| M[Redis]
-    J -->|resposta 200| A
+    F -->|extrai email| G
+    G -->|check RBAC| H
+    H -->|@PreAuthorize| I
+    I -->|busca role| J
+    J -->|auditoria AOP| K
+    K -->|persiste| L
+    J -->|cache/rate-limit| M
+    J -->|200 OK| A
 ```
-
 ---
 
 ## 📋 Visão Geral
