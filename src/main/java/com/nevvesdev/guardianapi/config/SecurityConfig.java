@@ -57,9 +57,21 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize ->
                         authorize
+                                // Public endpoints
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/health/**").permitAll()
-                                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/swagger-ui/index.html", "/v3/api-docs", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                                // Swagger and API Docs
+                                .requestMatchers(
+                                    "/swagger-ui.html",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui/index.html",
+                                    "/v3/api-docs",
+                                    "/v3/api-docs/**",
+                                    "/swagger-resources",
+                                    "/swagger-resources/**",
+                                    "/webjars/**"
+                                ).permitAll()
+                                // All other requests require authentication
                                 .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
