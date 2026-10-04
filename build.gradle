@@ -59,20 +59,23 @@ dependencies {
 }
 
 jacoco {
-    toolVersion = "0.8.10"
+    toolVersion = "0.8.13"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport
+    // JaCoCo com Java 25 tem incompatibilidade. Comentado por enquanto.
+    // finalizedBy jacocoTestReport
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
+// Desabilitado: JaCoCo 0.8.x não suporta Java 25 (class file major version 69)
+// Será habilitado quando JaCoCo tiver suporte oficial para Java 25
+// jacocoTestReport {
+//     dependsOn test
+//     reports {
+//         xml.required = true
+//         html.required = true
+//     }
+// }
 
-check.dependsOn jacocoTestReport
+// check.dependsOn jacocoTestReport
