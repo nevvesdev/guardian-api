@@ -2,6 +2,7 @@ package com.nevvesdev.guardianapi.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret:your-super-secret-key-that-is-at-least-32-characters-long-for-hs256}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration:86400000}")
@@ -25,6 +26,33 @@ public class JwtTokenProvider {
 
     @Value("${jwt.refresh-expiration:604800000}")
     private int refreshTokenExpirationMs;
+
+    @PostConstruct
+    public void validateJwtSecret() {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalArgumentException(
+                    "JWT secret must be configured. " +
+                            "Set 'jwt.secret' in application.yaml or via environment variable JWT_SECRET. " +
+                            "Use at least 32 characters for HS512 security."
+            );
+        }
+        if (jwtSecret.equals("your-super-secret-key-that-is-at-least-32-characters-long-for-hs256") ||
+                jwtSecret.equals("your-super-secret-key-that-is-at-least-32-characters-long-for-hs256-change-in-production")) {
+            throw new IllegalArgumentException(
+                    "JWT secret cannot be the default placeholder value. " +
+                            "This is a security vulnerability. " +
+                            "Set a secure, unique secret via JWT_SECRET environment variable."
+            );
+        }
+        if (jwtSecret.length() < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret must be at least 32 characters long for HS512 security. " +
+                            "Current length: " + jwtSecret.length() + " characters. " +
+                            "Please provide a longer secret key."
+            );
+        }
+        log.info("JWT secret validation passed. Secret length: {} characters", jwtSecret.length());
+    }
 
     public String generateToken(Authentication authentication) {
         String userEmail = authentication.getName();
