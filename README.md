@@ -34,7 +34,7 @@ graph TD
     F -->|valida assinatura| D
     F -->|extrai email| G
     G -->|check RBAC| H
-    H -->|@PreAuthorize| I
+    H -->|PreAuthorize| I
     I -->|busca role| J
     J -->|auditoria AOP| K
     K -->|persiste| L
